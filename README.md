@@ -1,4 +1,4 @@
-# MF PriceList v1.1
+# MF PriceList v1.2
 
 Schlankes WordPress-Plugin für eine zweistufige, manuell sortierbare Preisliste. Keine zusätzlichen Plugins, Bibliotheken oder Build-Schritte erforderlich.
 
@@ -14,9 +14,15 @@ Voraussetzungen: WordPress 6.5+, PHP 8.1+, HTTPS empfohlen, modernes JavaScript 
 
 ## Kategorien und Leistungen
 
-Unter **MF PriceList** zunächst Hauptkategorien (z.B. Damen) und dann Unterkategorien (z.B. Farbe, übergeordnete Kategorie Damen) anlegen. Genau zwei Ebenen sind möglich; Leistungen müssen einer Unterkategorie angehören. Hauptkategorien ohne Unterkategorien und leere Unterkategorien werden öffentlich ausgeblendet.
+Unter **MF PriceList** öffnet sich eine Tabelle aller Hauptkategorien und ihrer eingerückten Unterkategorien. **Neue Kategorie** oben rechts öffnet die Eingabe von Name und optionaler Beschreibung. **Anzeigen** öffnet die jeweilige Kategorie, **Bearbeiten** ihre Eingaben.
 
-Leistungen haben einen Namen, eine optionale Kurzbeschreibung und eine Unterkategorie. Die Reihenfolge innerhalb derselben Elternebene oder Unterkategorie durch Ziehen am Griff oder über **Nach oben / Nach unten** ändern. Die Zuordnung über das Kategorieauswahlfeld ändern. Entfernen einer Kategorie ist erst nach Entfernen oder Umordnen ihrer Kinder/Leistungen möglich.
+In einer Hauptkategorie stehen **Neue Unter-Kategorie** und **Neue Dienstleistung** oben rechts. In einer Unterkategorie steht **Neue Dienstleistung** bereit. Es gibt maximal zwei Kategorieebenen; Dienstleistungen sind auf beiden Ebenen erlaubt. Die gerade geöffnete Kategorie ist beim Anlegen einer Dienstleistung vorausgewählt und lässt sich im Editor ändern.
+
+Die Dienstleistungstabelle zeigt Sortierung (hoch/runter und Ziehgriff), Name mit Beschreibung darunter, Preisschema, aktuellen Preis und Bearbeiten. Das Schema „Einzelpreis“ kann Festpreis, ab-Preis oder auf Anfrage sein; „Nach Längen“ bietet kurz/mittel/lang. Nach Änderungen an Preiszeilen zeigt die Tabelle bis zum Speichern einen Änderungshinweis statt eines möglicherweise falsch berechneten Preises.
+
+Namen und Beschreibungen sowie Preise werden in einer separaten Bearbeitungsansicht innerhalb der Plugin-Seite bearbeitet. **Fertig – zurück zur Übersicht** beendet diese Ansicht, ohne bereits dauerhaft zu speichern. Wechsel zwischen Ansichten behält alle Eingaben. **Speichern** unterhalb der Übersicht bzw. des Editors übernimmt die gesamte Preisliste und öffnet wieder die zuletzt gewählte Kategorie.
+
+Die Reihenfolge innerhalb derselben Elternebene oder Kategorie durch Ziehen am Griff oder über **↑ / ↓** ändern. Entfernen einer Kategorie ist erst nach Entfernen oder Umordnen ihrer Kinder/Leistungen möglich. Beschreibungen von Kategorien und Dienstleistungen stehen in der öffentlichen Ausgabe immer unter dem Titel. Direkte Leistungen einer Hauptkategorie erscheinen vor ihren Unterkategorien. Leere Kategorien ohne Beschreibung und ohne sichtbaren Inhalt werden ausgeblendet; Kategorien mit Beschreibung bleiben sichtbar.
 
 **Speichern** übernimmt das gesamte Dokument. Nicht gespeicherte Änderungen sind nur im Browser vorhanden. Fehler verhindern die gesamte Speicherung; über Zurück können Eingaben korrigiert werden. Maximal 200 Kategorien, 2000 Leistungen und 100 Preise pro Leistung; maximal 2 MB Dokumentgröße. Nur eine Person sollte gleichzeitig bearbeiten: Es gibt keine Bearbeitungssperre, der letzte Speichervorgang gewinnt.
 
@@ -25,6 +31,8 @@ Leistungen haben einen Namen, eine optionale Kurzbeschreibung und eine Unterkate
 Jede Leistung unterstützt wahlweise **einen allgemeinen Preis** oder **bis zu drei Längenpreise: kurz, mittel, lang**. Bestehende Einzelpreise bleiben beim Update erhalten.
 
 Im Editor unter **Preismodell** auf „Bis zu drei Preise“ wechseln. Vorhandene Preise inklusive geplanter Änderungen werden dabei „kurz“ zugeordnet. Über **Längenpreis / Preisänderung hinzufügen** weitere Einträge anlegen und deren **Haarlänge** auswählen. Nicht benötigte Längen einfach weglassen. Jede verwendete Länge braucht genau einen Grundpreis **ohne Datum**; weitere Einträge derselben Länge erhalten einen Gültigkeitszeitpunkt. Preisart und Hinweis sind je Länge frei wählbar. Geplante Preisänderungen zählen nicht als zusätzliche Längenvarianten.
+
+Über **Öffentliche Darstellung der Längenpreise** lässt sich je Dienstleistung „Untereinander, eingerückt unter dem Titel“ aktivieren: gemeinsamer Titel mit Beschreibung, darunter je eine Zeile für kurz/mittel/lang mit rechts ausgerichtetem Preis. Ohne Auswahl bleibt die bisherige Darstellung neben dem Titel erhalten.
 
 Die Ausgabe beschriftet die Längenpreise in der Reihenfolge kurz, mittel, lang. Auf kleinen Bildschirmen stehen sie untereinander. Gleiche Hinweise werden auch über Längen hinweg je Unterkategorie zusammengefasst.
 
@@ -63,11 +71,12 @@ Alle Daten liegen in der nicht automatisch geladenen WordPress-Option `mfpl_data
 ```sh
 php tests/run.php
 find . -name '*.php' -print0 | xargs -0 -n1 php -l
+node tests/admin.test.js
 node --check assets/admin.js
 node --check assets/public.js
 ```
 
-Die eigenständigen Tests prüfen Domainregeln und Rendering mit kleinen WordPress-Funktionsdoubles: zwei Ebenen, ungültige Zuordnungen, Preisarten, Dezimalzahlen, inklusive Zeitgrenze, Zeitzone/Sommerzeitlücke, doppelte Zeitpunkte, Grundpreis, Fußnotendopplungen, HTML-Escaping und Leerzustand. Sie ersetzen keinen WordPress-Integrationstest. CI führt die Prüfungen für PHP 8.1, 8.3 und 8.4 aus.
+Die eigenständigen Tests prüfen Domainregeln und Rendering mit kleinen WordPress-Funktionsdoubles: zwei Ebenen, Dienstleistungen auf beiden Ebenen, Beschreibungen, Längendarstellung, ungültige Zuordnungen, Preisarten, Dezimalzahlen, inklusive Zeitgrenze, Zeitzone/Sommerzeitlücke, doppelte Zeitpunkte, Grundpreis, Fußnotendopplungen, HTML-Escaping und Leerzustand. Zusätzlich prüfen Admin-Interaktionstests mit einem kleinen DOM-Double Tabellen-Navigation, Bearbeitung, Kategorie-Vorauswahl und die Darstellungsoption. Diese Tests ersetzen keinen echten Browser- oder WordPress-Integrationstest. CI führt die Prüfungen für PHP 8.1, 8.3 und 8.4 aus.
 
 Vor Produktiveinsatz die manuelle Checkliste in [docs/ai/v1.md](docs/ai/v1.md) in einer WordPress-Testinstallation durchgehen. Keine Zusage einer bereits erfolgten Geräte-, Screenreader- oder Theme-Abnahme.
 

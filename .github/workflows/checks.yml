@@ -16,4 +16,5 @@ jobs:
           coverage: none
       - run: find . -name '*.php' -print0 | xargs -0 -n1 php -l
       - run: php tests/run.php
+      - run: node tests/admin.test.js
       - run: node --check assets/admin.js && node --check assets/public.js

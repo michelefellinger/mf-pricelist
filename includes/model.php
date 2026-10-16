@@ -19,7 +19,7 @@ function mfpl_validate( array $input ): array {
         $name = sanitize_text_field( $row['name'] ?? '' );
         if ( ! preg_match( '/^[a-zA-Z0-9_-]{1,64}$/D', $id ) || isset( $ids[ $id ] ) || '' === $name ) { $fail( 'Kategorien brauchen eindeutige IDs und einen Namen.' ); }
         $ids[ $id ] = true;
-        $result['categories'][] = array( 'id' => $id, 'name' => $name, 'parent' => (string) ( $row['parent'] ?? '' ) );
+        $result['categories'][] = array( 'id' => $id, 'name' => $name, 'description' => sanitize_textarea_field( $row['description'] ?? '' ), 'parent' => (string) ( $row['parent'] ?? '' ) );
     }
     $categories = array_column( $result['categories'], null, 'id' );
     foreach ( $categories as $row ) {
@@ -32,7 +32,7 @@ function mfpl_validate( array $input ): array {
         $name = sanitize_text_field( $row['name'] ?? '' );
         $category = (string) ( $row['category'] ?? '' );
         if ( ! preg_match( '/^[a-zA-Z0-9_-]{1,64}$/D', $id ) || isset( $ids[ $id ] ) || '' === $name ) { $fail( 'Leistungen brauchen eindeutige IDs und einen Namen.' ); }
-        if ( ! isset( $categories[ $category ] ) || '' === $categories[ $category ]['parent'] ) { $fail( 'Jede Leistung muss einer Unterkategorie zugeordnet sein.' ); }
+        if ( ! isset( $categories[ $category ] ) ) { $fail( 'Jede Leistung muss einer vorhandenen Kategorie zugeordnet sein.' ); }
         $ids[ $id ] = true;
         if ( ! isset( $row['prices'] ) || ! is_array( $row['prices'] ) || count( $row['prices'] ) > 100 ) { $fail( 'Ungültige Preisliste (maximal 100 Preise je Leistung).' ); }
         $prices = array();
@@ -64,7 +64,7 @@ function mfpl_validate( array $input ): array {
             if ( ! isset( $dates[ $variant ][0] ) ) { $fail( 'Jede verwendete Preisvariante braucht einen Grundpreis ohne Datum.' ); }
         }
         usort( $prices, static fn( $a, $b ) => $a['timestamp'] <=> $b['timestamp'] );
-        $result['services'][] = array( 'id' => $id, 'name' => $name, 'description' => sanitize_textarea_field( $row['description'] ?? '' ), 'category' => $category, 'prices' => $prices );
+        $result['services'][] = array( 'id' => $id, 'name' => $name, 'description' => sanitize_textarea_field( $row['description'] ?? '' ), 'category' => $category, 'length_layout' => ( ( $row['length_layout'] ?? 'columns' ) === 'stacked' ? 'stacked' : 'columns' ), 'prices' => $prices );
     }
     return $result;
 }

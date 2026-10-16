@@ -37,8 +37,12 @@ function mfpl_validate( array $input ): array {
         if ( ! isset( $row['prices'] ) || ! is_array( $row['prices'] ) || count( $row['prices'] ) > 100 ) { $fail( 'Ungültige Preisliste (maximal 100 Preise je Leistung).' ); }
         $prices = array();
         $dates = array();
+        $variants = array();
         foreach ( $row['prices'] as $price ) {
             if ( ! is_array( $price ) ) { $fail( 'Ungültiger Preis.' ); }
+            $variant = (string) ( $price['variant'] ?? '' );
+            if ( ! array_key_exists( $variant, mfpl_variant_labels() ) ) { $fail( 'Unbekannte Preisvariante.' ); }
+            $variants[ $variant ] = true;
             $type = (string) ( $price['type'] ?? '' );
             if ( ! in_array( $type, array( 'fixed', 'from', 'request' ), true ) ) { $fail( 'Unbekannte Preisart.' ); }
             $amount = str_replace( ',', '.', trim( (string) ( $price['amount'] ?? '' ) ) );
@@ -51,21 +55,34 @@ function mfpl_validate( array $input ): array {
                 $timestamp = $date->getTimestamp();
                 if ( $timestamp <= 0 ) { $fail( 'Der Gültigkeitszeitpunkt muss nach 1970 liegen.' ); }
             }
-            if ( isset( $dates[ $timestamp ] ) ) { $fail( 'Gültigkeitszeitpunkte dürfen je Leistung nicht doppelt vorkommen.' ); }
-            $dates[ $timestamp ] = true;
-            $prices[] = array( 'type' => $type, 'amount' => 'request' === $type ? '' : $amount, 'valid_from' => $local, 'timestamp' => $timestamp, 'note' => sanitize_text_field( $price['note'] ?? '' ) );
+            if ( isset( $dates[ $variant ][ $timestamp ] ) ) { $fail( 'Gültigkeitszeitpunkte dürfen je Längenvariante nicht doppelt vorkommen.' ); }
+            $dates[ $variant ][ $timestamp ] = true;
+            $prices[] = array( 'variant' => $variant, 'type' => $type, 'amount' => 'request' === $type ? '' : $amount, 'valid_from' => $local, 'timestamp' => $timestamp, 'note' => sanitize_text_field( $price['note'] ?? '' ) );
         }
-        if ( ! isset( $dates[0] ) ) { $fail( 'Jede Leistung braucht einen Grundpreis ohne Datum.' ); }
+        if ( ! $variants || ( isset( $variants[''] ) && count( $variants ) > 1 ) ) { $fail( 'Entweder ein allgemeiner Preis oder bis zu drei Längenvarianten je Leistung.' ); }
+        foreach ( $variants as $variant => $_ ) {
+            if ( ! isset( $dates[ $variant ][0] ) ) { $fail( 'Jede verwendete Preisvariante braucht einen Grundpreis ohne Datum.' ); }
+        }
         usort( $prices, static fn( $a, $b ) => $a['timestamp'] <=> $b['timestamp'] );
         $result['services'][] = array( 'id' => $id, 'name' => $name, 'description' => sanitize_textarea_field( $row['description'] ?? '' ), 'category' => $category, 'prices' => $prices );
     }
     return $result;
 }
 
-function mfpl_current_price( array $prices, int $now ): ?array {
+function mfpl_current_price( array $prices, int $now, string $variant = '' ): ?array {
     $current = null;
     foreach ( $prices as $price ) {
-        if ( $price['timestamp'] <= $now && ( null === $current || $price['timestamp'] > $current['timestamp'] ) ) { $current = $price; }
+        if ( ( $price['variant'] ?? '' ) === $variant && $price['timestamp'] <= $now && ( null === $current || $price['timestamp'] > $current['timestamp'] ) ) { $current = $price; }
     }
     return $current;
+}
+
+function mfpl_variant_labels(): array {
+    return array( '' => 'Allgemein', 'short' => 'kurz', 'medium' => 'mittel', 'long' => 'lang' );
+}
+
+function mfpl_service_variants( array $prices ): array {
+    $used = array_column( $prices, 'variant' );
+    if ( ! $used || in_array( '', $used, true ) ) { return array( '' => 'Allgemein' ); }
+    return array_intersect_key( mfpl_variant_labels(), array_flip( $used ) );
 }

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: MF PriceList
  * Description: Zweistufige Preislisten mit geplanten Preisen und Fußnoten.
- * Version: 1.0.0
+ * Version: 1.1.0
  * Requires at least: 6.5
  * Requires PHP: 8.1
  * Author: Michele Fellinger
@@ -10,7 +10,7 @@
  * Text Domain: mf-pricelist
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
-define( 'MFPL_VERSION', '1.0.0' );
+define( 'MFPL_VERSION', '1.1.0' );
 define( 'MFPL_URL', plugin_dir_url( __FILE__ ) );
 require_once __DIR__ . '/includes/model.php';
 require_once __DIR__ . '/includes/admin.php';

@@ -80,15 +80,24 @@
             field(box, 'Name', row.name, value => { row.name = value; });
             field(box, 'Kurzbeschreibung', row.description, value => { row.description = value; }, null, 'textarea');
             field(box, 'Unterkategorie', row.category, value => { row.category = value; render(); }, [['', '— Bitte wählen —'], ...data.categories.filter(c => c.parent).map(c => [c.id, (data.categories.find(p => p.id === c.parent)?.name || '') + ' > ' + c.name])]);
+            const lengths = row.prices.some(price => price.variant);
+            field(box, 'Preismodell', lengths ? 'lengths' : 'single', value => {
+                if (value === 'single' && row.prices.some(price => price.variant && price.variant !== 'short')) {
+                    status('Vor dem Wechsel zum Einzelpreis zuerst die Preise für mittel und lang entfernen.'); render(); return;
+                }
+                row.prices.forEach(price => { price.variant = value === 'lengths' ? 'short' : ''; });
+                render();
+            }, [['single', 'Ein allgemeiner Preis'], ['lengths', 'Bis zu drei Preise: kurz / mittel / lang']]);
             row.prices.forEach((price, index) => {
                 const p = element('fieldset'); p.append(element('legend', price.valid_from ? 'Geplanter Preis' : 'Grundpreis / ohne Datum'));
+                if (lengths) field(p, 'Haarlänge', price.variant || 'short', value => { price.variant = value; }, [['short', 'kurz'], ['medium', 'mittel'], ['long', 'lang']]);
                 field(p, 'Preisart', price.type, value => { price.type = value; render(); }, [['fixed', 'Festpreis'], ['from', 'ab-Preis'], ['request', 'Auf Anfrage']]);
                 if (price.type !== 'request') field(p, 'Preis in Euro (z.B. 49,50)', price.amount, value => { price.amount = value; });
                 field(p, 'Gültig ab (leer = Grundpreis)', price.valid_from, value => { price.valid_from = value; }, null, 'datetime-local');
                 field(p, 'Preishinweis / Fußnote (optional)', price.note, value => { price.note = value; });
                 p.append(button('Preis entfernen', () => { row.prices.splice(index, 1); changed(); render(); })); box.append(p);
             });
-            box.append(button('Preisänderung hinzufügen', () => { row.prices.push({type: 'fixed', amount: '', valid_from: '', note: ''}); changed(); render(); }));
+            box.append(button(lengths ? 'Längenpreis / Preisänderung hinzufügen' : 'Preisänderung hinzufügen', () => { row.prices.push({variant: lengths ? 'short' : '', type: 'fixed', amount: '', valid_from: '', note: ''}); changed(); render(); }));
         });
     }
     document.getElementById('mfpl-add-category').addEventListener('click', () => { data.categories.push({id: uid(), name: '', parent: ''}); changed(); render(); });

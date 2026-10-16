@@ -31,7 +31,7 @@ function mfpl_admin(): void {
     <div class="wrap mfpl-admin"><h1>MF PriceList</h1>
     <?php if ( isset( $_GET['saved'] ) ) : ?><div class="notice notice-success"><p>Preisliste gespeichert.</p></div><?php endif; ?>
     <p>Zwei Ebenen: Hauptkategorie → Unterkategorie → Leistungen. Reihenfolge durch Ziehen am Griff oder mit ↑/↓ ändern. Anschließend speichern.</p>
-    <p>Preise in Euro. Ein Grundpreis ohne Datum ist Pflicht; weitere Preise gelten ab dem angegebenen Zeitpunkt in der WordPress-Zeitzone <strong><?php echo esc_html( wp_timezone_string() ); ?></strong>. Hinweise gehören zum jeweiligen Preis.</p>
+    <p>Preise in Euro. Je verwendeter Längenvariante ist ein Grundpreis ohne Datum Pflicht; weitere Preise gelten ab dem angegebenen Zeitpunkt in der WordPress-Zeitzone <strong><?php echo esc_html( wp_timezone_string() ); ?></strong>. Hinweise gehören zum jeweiligen Preis.</p>
     <p>Öffentliche Ausgabe: <code>[preisliste]</code>. Änderungen werden erst mit „Speichern“ übernommen.</p>
     <noscript><p>Für den Preislisten-Editor muss JavaScript aktiviert sein.</p></noscript>
     <form id="mfpl-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">

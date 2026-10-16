@@ -38,21 +38,23 @@ function mfpl_render( array $data, int $now ): string {
             <section class="mfpl-category"><h3><?php echo esc_html( $category['name'] ); ?></h3>
             <dl class="mfpl-services">
             <?php foreach ( $services as $service ) :
-                $price = mfpl_current_price( $service['prices'], $now );
-                if ( null === $price ) { continue; }
-                $number = null;
-                if ( '' !== $price['note'] ) {
-                    $key = array_search( $price['note'], $notes, true );
-                    if ( false === $key ) { $notes[] = $price['note']; $key = count( $notes ) - 1; }
-                    $number = $key + 1;
-                }
-                $note_id = $instance . '-' . $category['id'] . '-note-' . $number;
                 ?>
                 <div class="mfpl-service"><dt><?php echo esc_html( $service['name'] ); ?><?php if ( '' !== $service['description'] ) : ?><span class="mfpl-description"><?php echo nl2br( esc_html( $service['description'] ) ); ?></span><?php endif; ?></dt>
-                <dd><?php
-                if ( 'request' === $price['type'] ) { echo 'Auf Anfrage'; }
-                else { echo esc_html( ( 'from' === $price['type'] ? 'ab ' : '' ) . number_format_i18n( (float) $price['amount'], 2 ) . ' €' ); }
-                if ( null !== $number ) : ?><sup><a href="#<?php echo esc_attr( $note_id ); ?>" aria-label="<?php echo esc_attr( 'Preishinweis ' . $number ); ?>"><?php echo esc_html( (string) $number ); ?></a></sup><?php endif; ?></dd></div>
+                <dd class="mfpl-prices"><?php foreach ( mfpl_service_variants( $service['prices'] ) as $variant => $label ) :
+                    $price = mfpl_current_price( $service['prices'], $now, $variant );
+                    if ( null === $price ) { continue; }
+                    $number = null;
+                    if ( '' !== $price['note'] ) {
+                        $key = array_search( $price['note'], $notes, true );
+                        if ( false === $key ) { $notes[] = $price['note']; $key = count( $notes ) - 1; }
+                        $number = $key + 1;
+                    }
+                    $note_id = $instance . '-' . $category['id'] . '-note-' . $number;
+                    ?><span class="mfpl-price"><?php if ( '' !== $variant ) : ?><span class="mfpl-length"><?php echo esc_html( $label ); ?></span> <?php endif;
+                    if ( 'request' === $price['type'] ) { echo 'Auf Anfrage'; }
+                    else { echo esc_html( ( 'from' === $price['type'] ? 'ab ' : '' ) . number_format_i18n( (float) $price['amount'], 2 ) . ' €' ); }
+                    if ( null !== $number ) : ?><sup><a href="#<?php echo esc_attr( $note_id ); ?>" aria-label="<?php echo esc_attr( 'Preishinweis ' . $number ); ?>"><?php echo esc_html( (string) $number ); ?></a></sup><?php endif; ?></span>
+                <?php endforeach; ?></dd></div>
             <?php endforeach; ?></dl>
             <?php if ( $notes ) : ?><ol class="mfpl-notes" aria-label="Preishinweise"><?php foreach ( $notes as $index => $note ) : ?><li tabindex="-1" id="<?php echo esc_attr( $instance . '-' . $category['id'] . '-note-' . ( $index + 1 ) ); ?>"><?php echo esc_html( $note ); ?></li><?php endforeach; ?></ol><?php endif; ?>
             </section>

@@ -1,4 +1,4 @@
-# MF PriceList v1
+# MF PriceList v1.1
 
 Schlankes WordPress-Plugin für eine zweistufige, manuell sortierbare Preisliste. Keine zusätzlichen Plugins, Bibliotheken oder Build-Schritte erforderlich.
 
@@ -22,7 +22,15 @@ Leistungen haben einen Namen, eine optionale Kurzbeschreibung und eine Unterkate
 
 ## Preise und Zeitplanung
 
-Jede Leistung braucht genau einen Grundpreis **ohne Datum**. Preisarten:
+Jede Leistung unterstützt wahlweise **einen allgemeinen Preis** oder **bis zu drei Längenpreise: kurz, mittel, lang**. Bestehende Einzelpreise bleiben beim Update erhalten.
+
+Im Editor unter **Preismodell** auf „Bis zu drei Preise“ wechseln. Vorhandene Preise inklusive geplanter Änderungen werden dabei „kurz“ zugeordnet. Über **Längenpreis / Preisänderung hinzufügen** weitere Einträge anlegen und deren **Haarlänge** auswählen. Nicht benötigte Längen einfach weglassen. Jede verwendete Länge braucht genau einen Grundpreis **ohne Datum**; weitere Einträge derselben Länge erhalten einen Gültigkeitszeitpunkt. Preisart und Hinweis sind je Länge frei wählbar. Geplante Preisänderungen zählen nicht als zusätzliche Längenvarianten.
+
+Die Ausgabe beschriftet die Längenpreise in der Reihenfolge kurz, mittel, lang. Auf kleinen Bildschirmen stehen sie untereinander. Gleiche Hinweise werden auch über Längen hinweg je Unterkategorie zusammengefasst.
+
+Für die Rückkehr zum allgemeinen Preis zuerst Einträge für mittel/lang entfernen (oder eine allein verbliebene Länge auf kurz umstellen); die kurz-Preise werden ohne Verlust ihrer Zeitplanung übernommen. Allgemeine Preise und Längenpreise können nicht innerhalb einer Leistung gemischt werden.
+
+Je Preisvariante gibt es genau einen Grundpreis. Preisarten: Preisarten:
 
 - **Festpreis:** z.B. `49,50` → 49,50 €.
 - **ab-Preis:** z.B. `149` → ab 149,00 €.

@@ -52,4 +52,41 @@ $data['services'][0]['prices'] = array( array( 'timestamp' => 0, 'type' => 'requ
 check( str_contains( mfpl_render( $data, $boundary ), 'Auf Anfrage' ), 'Request price' );
 check( str_contains( mfpl_render( array( 'categories' => array(), 'services' => array() ), $boundary ), 'keine Leistungen' ), 'Empty state' );
 check( mfpl_validate( array( 'categories' => array(), 'services' => array() ) )['services'] === array(), 'Empty document allowed' );
+// Length variants retain independent timelines and share deduplicated footnotes.
+$lengths = $input;
+$lengths['services'][0]['prices'] = array();
+foreach ( array( 'long', 'short', 'medium' ) as $variant ) {
+    foreach ( $input['services'][0]['prices'] as $price ) {
+        $price['variant'] = $variant;
+        if ( 'medium' === $variant ) { $price['type'] = 'request'; }
+        $lengths['services'][0]['prices'][] = $price;
+    }
+}
+$validated = mfpl_validate( $lengths );
+$variants = $validated['services'][0]['prices'];
+check( count( mfpl_service_variants( $variants ) ) === 3, 'Three length variants' );
+check( array_keys( mfpl_service_variants( $variants ) ) === array( 'short', 'medium', 'long' ), 'Canonical short medium long order' );
+check( mfpl_current_price( $variants, $boundary - 1, 'short' )['amount'] === '49.50', 'Short before switch' );
+check( mfpl_current_price( $variants, $boundary, 'short' )['amount'] === '59', 'Short at switch' );
+check( mfpl_current_price( $variants, $boundary, 'medium' )['type'] === 'request', 'Independent medium price type' );
+check( mfpl_current_price( $variants, $boundary, 'long' )['type'] === 'from', 'Long timeline' );
+$html = mfpl_render( $validated, $boundary );
+check( str_contains( $html, '>kurz</span>' ) && str_contains( $html, '>mittel</span>' ) && str_contains( $html, '>lang</span>' ), 'Labels rendered' );
+check( substr_count( $html, '<li ' ) === 1, 'Notes deduplicated across lengths' );
+$subset = $lengths;
+$subset['services'][0]['prices'] = array_values( array_filter( $subset['services'][0]['prices'], fn( $p ) => 'medium' !== $p['variant'] ) );
+check( count( mfpl_service_variants( mfpl_validate( $subset )['services'][0]['prices'] ) ) === 2, 'Two optional lengths' );
+$subset['services'][0]['prices'] = array_values( array_filter( $subset['services'][0]['prices'], fn( $p ) => 'short' === $p['variant'] ) );
+check( count( mfpl_service_variants( mfpl_validate( $subset )['services'][0]['prices'] ) ) === 1, 'One length allowed' );
+$bad = $lengths; $bad['services'][0]['prices'][] = $input['services'][0]['prices'][0];
+rejected( $bad, 'General and lengths cannot mix' );
+$bad = $lengths; $bad['services'][0]['prices'][0]['variant'] = 'extra';
+rejected( $bad, 'Fourth variant rejected' );
+$bad = $lengths; array_shift( $bad['services'][0]['prices'] );
+rejected( $bad, 'Each length needs its own base' );
+$bad = $lengths; $bad['services'][0]['prices'][] = $bad['services'][0]['prices'][0];
+rejected( $bad, 'Duplicate date in same length rejected' );
+$legacy = mfpl_validate( $input );
+check( mfpl_current_price( $legacy['services'][0]['prices'], $boundary )['amount'] === '59', 'Legacy single prices preserved after validation' );
+check( ! str_contains( mfpl_render( $legacy, $boundary ), 'mfpl-length' ), 'Legacy output has no length label' );
 echo "OK: $count checks\n";
